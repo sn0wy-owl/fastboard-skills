@@ -1,0 +1,12 @@
+# Сгенерированные ссылки установщика (создаются `node scripts/install.mjs`)
+.claude/skills/
+.cursor/skills/
+.agents/skills/
+.hermes/skills/
+
+# Прочее
+node_modules/
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db

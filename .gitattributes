@@ -1,0 +1,5 @@
+# Единый LF в репозитории (Windows-чекаут не должен плодить CRLF в диффах).
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.pdf binary

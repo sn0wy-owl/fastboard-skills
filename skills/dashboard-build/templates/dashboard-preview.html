@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<!--
+  Скелет HTML-предпросмотра дашборда: доска 1:1 в реальных пикселях.
+
+  Правила (см. references/preview-spec.md):
+    * координаты и размеры блоков — те же, что будут в собранной странице;
+    * поля доски и зазоры видны (кнопка «сетка»);
+    * выдуманные числа помечены на самой странице, а не только в ответе агента;
+    * рядом — легенда: блок → метрика → единица → источник → чего ещё нет.
+
+  Правь константы и блоки под свой бриф, а не только цвета.
+-->
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Предпросмотр дашборда — 1600×1200</title>
+<style>
+  /* Внешний вид этого файла — автономный (это страница-макет, а не виджет). */
+  :root{
+    --board-w: 1600px; --board-h: 1200px;   /* ширина/высота доски: как в платформе */
+    --pad: 20px; --gap: 12px;               /* поле доски и зазор между блоками */
+    --ink:#12161c; --muted:#6b7280; --line:#e3e7ec; --card:#ffffff; --bg:#eef1f5;
+    --accent:#2f6fd0; --mock:#b45309; --mock-bg:#fef3c7;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+  header.page{max-width:var(--board-w);margin:24px auto 8px;padding:0 var(--pad);
+              display:flex;gap:16px;align-items:baseline;justify-content:space-between}
+  header.page h1{margin:0;font-size:20px}
+  header.page .sub{color:var(--muted);font-size:13px}
+  button{font:inherit;padding:6px 12px;border:1px solid var(--line);border-radius:8px;
+         background:#fff;cursor:pointer}
+
+  .board{position:relative;width:var(--board-w);height:var(--board-h);margin:0 auto 8px;
+         background:var(--card);border:1px solid var(--line);border-radius:12px;
+         transform-origin:top left}
+  .board.grid::before{content:"";position:absolute;inset:0;border-radius:12px;pointer-events:none;
+         background:repeating-linear-gradient(to right,rgba(47,111,208,.07) 0 1px,transparent 1px 100%);
+         background-size:calc(var(--gap) + 1px) 100%}
+  .board.grid::after{content:"";position:absolute;inset:var(--pad);pointer-events:none;
+         border:1px dashed rgba(47,111,208,.35);border-radius:6px}
+
+  .blk{position:absolute;border-radius:10px;background:#fff;border:1px solid var(--line);
+       padding:12px 14px;overflow:hidden}
+  .blk .t{font-size:12px;color:var(--muted);letter-spacing:.02em;text-transform:uppercase}
+  .blk .v{font-size:30px;font-weight:600;line-height:1.15;margin-top:4px}
+  .blk .v small{font-size:15px;font-weight:500;color:var(--muted);margin-left:4px}
+  .blk .d{font-size:12px;color:var(--muted);margin-top:2px}
+  .blk.chart .t{text-transform:none;font-size:14px;color:var(--ink);font-weight:600}
+  .plot{margin-top:10px;height:calc(100% - 46px);display:flex;align-items:flex-end;
+        gap:6px;padding-bottom:18px;border-bottom:1px solid var(--line)}
+  .plot span{flex:1;background:linear-gradient(180deg,#7aa7e6,#2f6fd0);border-radius:4px 4px 0 0}
+  .plot span.pie{background:linear-gradient(180deg,#a5d6a7,#2e7d32)}
+  .plot .axis{position:absolute;left:14px;right:14px;bottom:6px;display:flex;justify-content:space-between;
+        font-size:11px;color:var(--muted)}
+  table.mini{width:100%;border-collapse:collapse;font-size:13px}
+  table.mini th,table.mini td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+  table.mini th{color:var(--muted);font-weight:500}
+  .overlay{background:transparent;border:0;padding:0}
+  .spark{width:100%;height:100%;display:flex;align-items:flex-end;gap:3px}
+  .spark i{flex:1;background:rgba(47,111,208,.55);border-radius:2px}
+
+  .mock{position:absolute;right:10px;top:10px;background:var(--mock-bg);color:var(--mock);
+        font-size:10px;font-weight:600;letter-spacing:.04em;padding:2px 6px;border-radius:999px}
+  .legend{max-width:var(--board-w);margin:16px auto 48px;padding:0 var(--pad)}
+  .legend table{width:100%;border-collapse:collapse;font-size:13px}
+  .legend th,.legend td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line)}
+  .legend th{color:var(--muted);font-weight:500}
+  .legend .num{text-align:right;font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+<header class="page">
+  <div>
+    <h1>Предпросмотр доски «Выручка и каналы»</h1>
+    <div class="sub">Доска 1600×1200, поле 20 px, зазор 12 px — координаты совпадают со сборщиком.
+      Все числа — <b>заглушки</b>, реального источника нет.</div>
+  </div>
+  <button onclick="document.querySelector('.board').classList.toggle('grid')">сетка</button>
+</header>
+
+<div class="board grid">
+  <!-- ряд KPI: 20,120 → 4 блока по 381 с зазором 12 -->
+  <div class="blk" style="left:20px;top:20px;width:381px;height:120px">
+    <div class="mock">макет</div>
+    <div class="t">Выручка</div><div class="v">13,54<small>млн ₽</small></div>
+    <div class="d">янв–авг к янв–авг прошлого года</div>
+  </div>
+  <div class="blk" style="left:413px;top:20px;width:381px;height:120px">
+    <div class="mock">макет</div>
+    <div class="t">Заказы</div><div class="v">99 441<small>шт</small></div>
+    <div class="d">янв–авг</div>
+  </div>
+  <div class="blk" style="left:806px;top:20px;width:381px;height:120px">
+    <div class="mock">макет</div>
+    <div class="t">Средний чек</div><div class="v">136,20<small>₽</small></div>
+    <div class="d">янв–авг</div>
+  </div>
+  <div class="blk" style="left:1199px;top:20px;width:381px;height:120px">
+    <div class="mock">макет</div>
+    <div class="t">Доля повторных</div><div class="v">3,1<small>%</small></div>
+    <div class="d">янв–авг</div>
+  </div>
+  <!-- оверлей: спарклайн внутри карточки №1 (в слоях идёт выше её фона) -->
+  <div class="blk overlay" style="left:150px;top:70px;width:240px;height:52px">
+    <div class="spark">
+      <i style="height:45%"></i><i style="height:58%"></i><i style="height:52%"></i>
+      <i style="height:66%"></i><i style="height:78%"></i><i style="height:72%"></i>
+      <i style="height:88%"></i><i style="height:96%"></i>
+    </div>
+  </div>
+
+  <!-- ряд графиков: 152, высота 400 → 2 блока по 774 -->
+  <div class="blk chart" style="left:20px;top:152px;width:774px;height:400px">
+    <div class="t">Выручка по месяцам</div>
+    <div class="plot"><span style="height:52%"></span><span style="height:64%"></span>
+      <span style="height:61%"></span><span style="height:72%"></span><span style="height:79%"></span>
+      <span style="height:77%"></span><span style="height:88%"></span><span style="height:93%"></span>
+      <div class="axis"><b>янв</b><b>фев</b><b>мар</b><b>апр</b><b>май</b><b>июн</b><b>июл</b><b>авг</b></div>
+    </div>
+  </div>
+  <div class="blk chart" style="left:806px;top:152px;width:774px;height:400px">
+    <div class="t">Выручка по каналам</div>
+    <div class="plot"><span style="height:92%"></span><span style="height:58%"></span>
+      <span style="height:49%"></span><span style="height:29%"></span>
+      <div class="axis"><b>маркетплейс</b><b>сайт</b><b>розница</b><b>партнёры</b></div>
+    </div>
+  </div>
+
+  <!-- ряд средних блоков: 564, высота 260 → 3 блока по 512 -->
+  <div class="blk chart" style="left:20px;top:564px;width:512px;height:260px">
+    <div class="t">Способы оплаты</div>
+    <div class="plot"><span class="pie" style="height:90%"></span><span class="pie" style="height:50%"></span>
+      <span class="pie" style="height:32%"></span><span class="pie" style="height:26%"></span>
+      <div class="axis"><b>карта</b><b>наличные</b><b>перевод</b><b>прочее</b></div>
+    </div>
+  </div>
+  <div class="blk chart" style="left:544px;top:564px;width:512px;height:260px">
+    <div class="t">Топ категорий</div>
+    <div class="plot"><span style="height:88%"></span><span style="height:72%"></span>
+      <span style="height:54%"></span><span style="height:44%"></span><span style="height:31%"></span>
+      <div class="axis"><b>bed_bath</b><b>health</b><b>sports</b><b>furniture</b><b>computer</b></div>
+    </div>
+  </div>
+  <div class="blk chart" style="left:1068px;top:564px;width:512px;height:260px">
+    <div class="t">Заказы по неделям</div>
+    <div class="plot"><span style="height:70%"></span><span style="height:86%"></span>
+      <span style="height:78%"></span><span style="height:92%"></span>
+      <div class="axis"><b>н-1</b><b>н-2</b><b>н-3</b><b>н-4</b></div>
+    </div>
+  </div>
+
+  <!-- таблица: 836, высота 344, на всю ширину -->
+  <div class="blk" style="left:20px;top:836px;width:1560px;height:344px">
+    <div class="t">Топ категорий: выручка и заказы</div>
+    <table class="mini" style="margin-top:10px">
+      <tr><th>Категория</th><th class="num">Выручка, млн ₽</th><th class="num">Заказы, шт</th>
+          <th class="num">Средний чек, ₽</th><th class="num">Доля, %</th></tr>
+      <tr><td>bed_bath_table</td><td class="num">3,40</td><td class="num">11 115</td>
+          <td class="num">135,4</td><td class="num">25,1</td></tr>
+      <tr><td>health_beauty</td><td class="num">2,80</td><td class="num">9 670</td>
+          <td class="num">134,9</td><td class="num">20,7</td></tr>
+      <tr><td>sports_leisure</td><td class="num">2,10</td><td class="num">7 721</td>
+          <td class="num">132,1</td><td class="num">15,5</td></tr>
+      <tr><td>furniture_decor</td><td class="num">1,70</td><td class="num">6 049</td>
+          <td class="num">129,8</td><td class="num">12,6</td></tr>
+      <tr><td>computer_accessories</td><td class="num">1,20</td><td class="num">4 512</td>
+          <td class="num">128,3</td><td class="num">8,9</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="legend">
+  <table>
+    <tr><th>Блок</th><th>Метрика</th><th>Единица</th><th>Источник</th><th>Чего ещё нет</th></tr>
+    <tr><td>KPI «Выручка»</td><td>revenue</td><td>млн ₽</td><td>заглушка</td>
+        <td>реальная витрина, сравнение год-к-году</td></tr>
+    <tr><td>KPI «Заказы»</td><td>orders</td><td>шт</td><td>заглушка</td><td>—</td></tr>
+    <tr><td>KPI «Средний чек»</td><td>aov</td><td>₽</td><td>заглушка</td><td>—</td></tr>
+    <tr><td>KPI «Доля повторных»</td><td>repeat_share</td><td>%</td><td>заглушка</td>
+        <td>определение «повторного» заказа</td></tr>
+    <tr><td>Выручка по месяцам</td><td>revenue</td><td>млн ₽</td><td>заглушка</td>
+        <td>фильтр периода</td></tr>
+    <tr><td>Выручка по каналам</td><td>revenue</td><td>млн ₽</td><td>заглушка</td>
+        <td>справочник каналов</td></tr>
+    <tr><td>Способы оплаты</td><td>revenue</td><td>млн ₽</td><td>заглушка</td>
+        <td>проверить, что доля считается по выручке, а не по числу заказов</td></tr>
+    <tr><td>Заказы по неделям</td><td>orders</td><td>шт</td><td>заглушка</td>
+        <td>первая неделя месяца обрезана</td></tr>
+    <tr><td>Таблица категорий</td><td>revenue / orders</td><td>млн ₽ / шт</td><td>заглушка</td>
+        <td>сортировка по выручке</td></tr>
+  </table>
+</div>
+</body>
+</html>
