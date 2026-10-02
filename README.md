@@ -11,6 +11,7 @@
 agent-skills/
 ├── AGENTS.md                  # правила репозитория для агентов (читается Codex, Cursor, Grok, Gemini CLI, ...)
 ├── CLAUDE.md                  # короткий указатель для Claude Code
+├── CONTRIBUTING.md            # процесс: ветка → проверки → PR → мерж
 ├── skills/                    # ★ единственный источник правды
 │   └── dashboard-build/       # скилл: дашборд под ключ
 │       ├── SKILL.md
@@ -22,7 +23,9 @@ agent-skills/
 │   ├── install.mjs            # разложить skills/ по каталогам агентских систем
 │   └── validate-skills.mjs    # проверка frontmatter по спецификации Agent Skills
 ├── skills.sh.json             # категории для Skills Hub в Hermes
-└── .github/workflows/validate.yml
+└── .github/
+    ├── workflows/validate.yml # CI: валидатор + сухой прогон установщика
+    └── pull_request_template.md
 ```
 
 Каталоги `.claude/skills/`, `.cursor/skills/`, `.agents/skills/`, `.hermes/skills/` внутри
@@ -87,7 +90,50 @@ mklink /J "%USERPROFILE%\.claude\skills\dashboard-build" "%CD%\skills\dashboard-
 hermes config set skills.external_dirs '["~/agents/agent-skills/skills"]'
 ```
 
+## Как пользоваться скиллом
+
+Скилл не нужно «запускать»: агент сам подгружает его, когда задача совпала с `description`.
+Но можно вызвать и явно — синтаксис у систем разный:
+
+| Система | Явный вызов | Где посмотреть, что скилл виден |
+| --- | --- | --- |
+| Hermes Agent | `/dashboard-build сделай лист по продажам` — слэш-командой; можно сцепить несколько: `/dashboard-build /bi-dashboard-review …` | `hermes skills list` (личные и установленные); для репозитория — `hermes skills trust <путь>` печатает, сколько проектных скиллов найдено |
+| Claude Code | `/dashboard-build` — скиллы и старые команды из `.claude/commands/` работают одинаково | список слэш-команд в сессии |
+| Codex CLI | `$dashboard-build` или выбор из списка по `$` | там же, в автодополнении по `$` |
+| Cursor | из слэш-меню (поддержка скиллов с 2.4) | слэш-меню |
+
+Пример запроса, на который скилл срабатывает сам:
+
+> Сделай дашборд по продажам за 8 месяцев: выручка, заказы, средний чек, динамика по каналам.
+
+Дальше агент идёт по цепочке из `SKILL.md`: сначала выясняет факты из файлов, потом задаёт
+вопросы, потом собирает HTML-предпросмотр — и только потом страницу платформы.
+
+### Проверки внутри скилла
+
+Шаблон сборщика и валидатор страницы запускаются и вручную — так проверяют свои правки и так
+можно быстро увидеть, что скилл рабочий:
+
+```bash
+cd skills/dashboard-build
+python3 templates/builder.py --out page.json     # сборка + самопроверки
+python3 scripts/check_page.py page.json          # независимая проверка результата
+```
+
+(файл `page.json` — рабочий артефакт, в git не попадает)
+
+### Обновление
+
+| Как подключено | Как получить обновление |
+| --- | --- |
+| Hermes, через tap | `hermes skills check` затем `hermes skills update` |
+| Установщиком, `--mode link` (по умолчанию) | ничего: правка в репозитории видна сразу (сделай `git pull`) |
+| Установщиком, `--mode copy` | повторить `node scripts/install.mjs --scope user` (или `--scope project`) |
+
 ## Как добавить скилл
+
+Полный процесс (ветка, PR, версионирование, definition of done) — в [`CONTRIBUTING.md`](CONTRIBUTING.md).
+Коротко:
 
 1. `mkdir -p skills/<имя>` — имя каталога = `name:` во frontmatter, только строчные буквы,
    цифры и одиночные дефисы.
@@ -98,7 +144,8 @@ hermes config set skills.external_dirs '["~/agents/agent-skills/skills"]'
    исполняемые проверки — в `scripts/`. Всё это лежит рядом со `SKILL.md` и грузится по
    требованию, а не целиком.
 4. Проверить: `node scripts/validate-skills.mjs`.
-5. Закоммитить. Каталоги-ссылки внутри репозитория не коммитятся — их восстановит установщик.
+5. Закоммитить и открыть PR. Каталоги-ссылки внутри репозитория не коммитятся — их восстановит
+   установщик.
 
 Правило репозитория: **скилл — это процедура, а не лог.** Никаких номеров задач, дат и
 историй инцидентов; только шаги, инварианты и грабли, которые повторятся.
