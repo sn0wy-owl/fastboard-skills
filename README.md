@@ -13,12 +13,17 @@ agent-skills/
 ├── CLAUDE.md                  # короткий указатель для Claude Code
 ├── CONTRIBUTING.md            # процесс: ветка → проверки → PR → мерж
 ├── skills/                    # ★ единственный источник правды
-│   └── dashboard-build/       # скилл: дашборд под ключ
+│   ├── dashboard-build/       # скилл: дашборд под ключ (бриф → предпросмотр → сборка)
+│   │   ├── SKILL.md
+│   │   ├── references/        # длинные методички, грузятся по требованию
+│   │   ├── templates/         # скелеты: HTML-предпросмотр, сборщик страницы
+│   │   ├── scripts/           # проверки, запускаемые скиллом
+│   │   └── agents/openai.yaml # необязательная витрина для Codex/ChatGPT
+│   └── bi-dashboard-styleguide/  # скилл: стиль дашборда и проверка стиля
 │       ├── SKILL.md
-│       ├── references/        # длинные методички, грузятся по требованию
-│       ├── templates/         # скелеты: HTML-предпросмотр, сборщик страницы
-│       ├── scripts/           # проверки, запускаемые скиллом
-│       └── agents/openai.yaml # необязательная витрина для Codex/ChatGPT
+│       ├── references/        # принципы, токены, нормализация настроек, правила проверки
+│       ├── templates/         # стартовый файл токенов
+│       └── scripts/           # чекер стиля готовой страницы
 ├── scripts/
 │   ├── install.mjs            # разложить skills/ по каталогам агентских систем
 │   └── validate-skills.mjs    # проверка frontmatter по спецификации Agent Skills
@@ -53,6 +58,7 @@ agent-skills/
 hermes skills tap add <owner>/agent-skills     # один раз
 hermes skills search dashboard                 # найти
 hermes skills install <owner>/agent-skills/dashboard-build
+hermes skills install <owner>/agent-skills/bi-dashboard-styleguide
 hermes skills update                           # подтянуть новые версии
 ```
 
@@ -97,7 +103,7 @@ hermes config set skills.external_dirs '["~/agents/agent-skills/skills"]'
 
 | Система | Явный вызов | Где посмотреть, что скилл виден |
 | --- | --- | --- |
-| Hermes Agent | `/dashboard-build сделай лист по продажам` — слэш-командой; можно сцепить несколько: `/dashboard-build /bi-dashboard-review …` | `hermes skills list` (личные и установленные); для репозитория — `hermes skills trust <путь>` печатает, сколько проектных скиллов найдено |
+| Hermes Agent | `/dashboard-build сделай лист по продажам`, `/bi-dashboard-styleguide сведи стиль к нейтральному` — слэш-командой; можно сцепить несколько: `/dashboard-build /bi-dashboard-styleguide …` | `hermes skills list` (личные и установленные); для репозитория — `hermes skills trust <путь>` печатает, сколько проектных скиллов найдено |
 | Claude Code | `/dashboard-build` — скиллы и старые команды из `.claude/commands/` работают одинаково | список слэш-команд в сессии |
 | Codex CLI | `$dashboard-build` или выбор из списка по `$` | там же, в автодополнении по `$` |
 | Cursor | из слэш-меню (поддержка скиллов с 2.4) | слэш-меню |
@@ -118,6 +124,9 @@ hermes config set skills.external_dirs '["~/agents/agent-skills/skills"]'
 cd skills/dashboard-build
 python3 templates/builder.py --out page.json     # сборка + самопроверки
 python3 scripts/check_page.py page.json          # независимая проверка результата
+
+cd skills/bi-dashboard-styleguide
+python3 scripts/check_style.py page.json         # стиль: 16 правил, код 1 при нарушениях
 ```
 
 (файл `page.json` — рабочий артефакт, в git не попадает)

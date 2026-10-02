@@ -1,0 +1,62 @@
+{
+  "_comment": "Стартовый набор токенов чистого нейтрального стиля. Скопировать в проект, сверить с гайдом и держать константами в сборщике. Тона — уровни темы платформы, не hex.",
+  "version": "1.0.0",
+  "board": {
+    "margin": 20,
+    "gutter": 20,
+    "row_rule": "y следующего ряда = y + высота ряда + gutter"
+  },
+  "space": {
+    "base": 4,
+    "sp1": 4,
+    "sp3": 12,
+    "sp5": 20,
+    "sp10": 40,
+    "content_x": "margin + внутренний отступ блока = 40 от края доски",
+    "table_indentation": { "left_right": 20, "top_bottom": 12 }
+  },
+  "type": {
+    "cap": { "size": 12, "bold": false, "level": 3, "role": "подписи, оси, легенда, ячейки таблицы, сегменты круговой" },
+    "head_table": { "size": 14, "bold": true, "level": 3, "role": "шапка колонок таблицы" },
+    "head": { "size": 16, "bold": false, "level": 4, "role": "заголовок блока — один у всех" },
+    "unit": { "size": 16, "bold": true, "level": 2, "role": "единица измерения в KPI" },
+    "title": { "size": 20, "bold": false, "level": 4, "role": "заголовок KPI-карточки" },
+    "deviation": { "size": 20, "bold": true, "level": 2, "role": "отклонение в карточке" },
+    "value": { "size": 28, "bold": true, "level": 1, "role": "значение метрики" },
+    "filter_text": { "size": 12, "bold": false, "level": 1, "role": "текст фильтров (управляющий элемент)" },
+    "scale": [12, 14, 16, 20, 28]
+  },
+  "color": {
+    "roles": { "value": 1, "unit": 2, "caption": 3, "header": 4, "service": 5 },
+    "level5_usage": "только фон шапки таблицы (headerSettings.properties.backgroundColor)",
+    "forbidden": ["своя палитра серий (colorId/groupId)", "заливка карточек цветом", "рамки", "тени",
+                  "цвет как сигнал «плохо/хорошо» без подтверждённых семантических уровней"]
+  },
+  "container": {
+    "background": "цвет по умолчанию темы",
+    "blur": 0,
+    "border": { "isActive": false, "width": 0, "radius": 8 },
+    "shadow": { "isActive": false, "blurRadius": 10, "offsetX": 0, "offsetY": 5 }
+  },
+  "charts": {
+    "bars_from_zero": true,
+    "lines_solid": true,
+    "no_zoom": true,
+    "no_container_border": true,
+    "no_grid": true,
+    "no_axis_line": true,
+    "legend_single_series": false,
+    "legend_pie": true,
+    "toolbox": "только таблица («скачать данные»)",
+    "value_labels": "только там, где нет оси значений (горизонтальные столбцы, круговая)"
+  },
+  "filters": { "h": 48, "w": 280, "step": 300, "text_size": 12, "dropdown": true },
+  "normalization": [
+    "fontFamilySettings → шрифт темы (isActive false, fontFamily пусто) во всех секциях",
+    "showGrid / showAxis → false во всех осях",
+    "донорские тексты → пусто: header.text при скрытом заголовке, axis.name.text, description.text, customTitle ×3",
+    "shadowSettings / backgroundSettings.blur / borderSettings → как в container",
+    "зум погашен и один и тот же блок у всех графиков; pieAnimationElement выключена",
+    "отступы донора 22 → 20, indentation 15/10/2 → 16/12/4"
+  ]
+}

@@ -3,7 +3,7 @@
   "groupings": [
     {
       "title": "BI & Dashboards",
-      "skills": ["dashboard-build"]
+      "skills": ["dashboard-build", "bi-dashboard-styleguide"]
     }
   ]
 }
