@@ -76,10 +76,10 @@ blur, рамки, зум, анимация), правила проверки, с
 ### 1. Как tap в Hermes (для всей команды)
 
 ```bash
-hermes skills tap add <owner>/agent-skills     # один раз
+hermes skills tap add <owner>/fastboard-skills     # один раз
 hermes skills search dashboard                 # найти
-hermes skills install <owner>/agent-skills/dashboard-build
-hermes skills install <owner>/agent-skills/bi-dashboard-styleguide
+hermes skills install <owner>/fastboard-skills/dashboard-build
+hermes skills install <owner>/fastboard-skills/bi-dashboard-styleguide
 hermes skills update                           # подтянуть новые версии
 ```
 
