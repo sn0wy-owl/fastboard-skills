@@ -33,7 +33,7 @@ agent-skills/
 
 | Система | Личный уровень | Уровень проекта | Каталог скиллов |
 | --- | --- | --- | --- |
-| Hermes Agent | `~/.hermes/skills/` | `.hermes/skills/`, `.agents/skills/` (нужен `hermes skills trust`) | `~/.hermes/skills/` — родной; tap-репозиторий ставит в него же |
+| Hermes Agent | `~/.hermes/skills/` | `.agents/skills/` (нужен `hermes skills trust`) | `~/.hermes/skills/` — родной; tap-репозиторий ставит в него же |
 | Claude Code | `~/.claude/skills/` | `.claude/skills/` | свой, `.agents/skills` не читает |
 | Codex CLI | `~/.agents/skills/` (устаревшее, но читаемое — `~/.codex/skills/`) | `.agents/skills/` (от рабочего каталога до корня репо) | `.agents/skills/` |
 | Cursor | `~/.cursor/skills/` | `.cursor/skills/` | `.cursor/skills/` (с 2.4) |
@@ -66,6 +66,15 @@ node scripts/install.mjs --dry-run               # показать, что бу
 По умолчанию создаются **ссылки** (на Windows — junctions, прав администратора не требуют),
 поэтому правка скилла в `skills/` сразу видна всем агентам. `--mode copy` — для сред, где
 ссылки запрещены; копии надо переустанавливать после обновления.
+
+После установки на уровне проекта: Claude Code и Codex видят скиллы сразу; Hermes — после
+доверия к репозиторию. Автоопределение корня проекта иногда не срабатывает (например, при
+запуске из MSYS-оболочки), тогда путь передаётся явно:
+
+```bash
+hermes skills trust "C:/путь/к/agent-skills"
+hermes skills untrust "C:/путь/к/agent-skills"   # отозвать
+```
 
 ### 3. Вручную, если нужно
 
