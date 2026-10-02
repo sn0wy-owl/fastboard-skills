@@ -31,8 +31,10 @@ const TARGETS = {
   hermes: {
     label: 'Hermes Agent',
     user: path.join(HERMES_HOME, 'skills'),
-    project: '.hermes/skills',
-    note: 'проектный уровень требует `hermes skills trust`',
+    // проектный уровень Hermes покрыт каталогом .agents/skills (см. target `agents`),
+    // поэтому второй ссылки в .hermes/skills не создаём: иначе скилл регистрируется дважды
+    project: null,
+    note: 'личный уровень — родной каталог Hermes; в проекте читает .agents/skills',
   },
   claude: {
     label: 'Claude Code',
@@ -138,9 +140,6 @@ function main() {
       base = opts.scope === 'project' || opts.scope === 'both'
         ? (cfg.project ? path.join(opts.cwd, cfg.project) : null)
         : cfg.user
-      if (opts.scope === 'both') {
-        // режим both: сначала личный, потом проектный — обрабатываем ниже
-      }
       label = cfg.label
       note = cfg.note || ''
     }
@@ -149,6 +148,10 @@ function main() {
       bases.push(TARGETS[t].user, path.join(opts.cwd, TARGETS[t].project))
     } else if (base) {
       bases.push(base)
+    }
+    if (!bases.length) {
+      results.push({ label, note, dir: '—', status: `не требуется на этом уровне (${note || 'каталог не нужен'})`, name: '' })
+      continue
     }
 
     for (const dir of bases) {
