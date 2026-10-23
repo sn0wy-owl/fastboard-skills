@@ -1,12 +1,12 @@
 ---
 name: dashboard-build
 description: "Use when building or redesigning a dashboard end-to-end — дашборд, лист, макет, KPI-карточки, графики, фильтры. Runs the full chain: факты из файлов → бриф вопросами → HTML-предпросмотр в реальных координатах → сборщик страницы для BI-платформы → приёмка. Covers geometry, units, mock data, deterministic ids."
-version: 1.2.0
+version: 1.3.0
 license: CC-BY-4.0
 compatibility: "Python 3 (stdlib only) для шаблонов сборщика и проверок. Платформа BI — любая, у которой страница описывается файлом (для Fastboard — references/fastboard-page-json.md)."
 metadata:
   author: team
-  version: "1.2.0"
+  version: "1.3.0"
   tags: [dashboard, bi, kpi, html-preview, fastboard, workflow]
 ---
 

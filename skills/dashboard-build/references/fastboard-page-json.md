@@ -15,9 +15,13 @@
   "metaModels": [ {id, zoom, modelItems:[{alias,table,config}]} ] }
 ```
 
-Виджет: `id, pageId, visualisationType, isBlock, isVisible, events{…}, sqlData{…},
-dataSettings{type,limit,barType,modelId,incisions[],indicators[],variables[],isRealData,…},
-viewSettings{20–30 секций}, positionConfig{x,y,width,height,sticking}, backgroundImagesSettings`.
+Виджет: `id, pageId, visualisationType, isBlock, isVisible,
+events{goTo, goToHref, activateTo, activateObject, variablesSettings, transitionSettings,
+filterSettings{isFiltering, applyToAllPages, responseToExternalDrillDown}},
+sqlData{isFreeMode, freeModeSql, raw*Sql, filterAndGroupRequest},
+dataSettings{type,limit,barType,modelId,incisions[],indicators[],variables[],isRealData,
+activeIncisionId,isDrillDown,rotateTo90}, viewSettings{20–30 секций},
+positionConfig{x,y,width,height,sticking}, backgroundImagesSettings`.
 
 Типы `visualisationType`, встреченные в бою: `text`, `table`, `lineAndBar`, `heatmap`, `gantt`,
 `svg`, `pie`. Карта, отдельный «индикатор» и прогрессбар 0–100 в выгрузках не встречались —
@@ -33,6 +37,13 @@ viewSettings{20–30 секций}, positionConfig{x,y,width,height,sticking}, b
   высотой ~45 px («прогрессбар»).
 - `positionConfig.width/height` — в px, доска — `page.boardSettings.sizes` (чистая страница —
   1600×1200).
+- **Виртуальные данные — запасные значения, а не переключатель режима:**
+  `dataSettings.incisions[].fictionalData` (значения разреза) и
+  `dataSettings.indicators[].fictionalMinAndMax` (`{min, max}`). Встречаются вместе с
+  `isRealData: true` и живым `modelId`; без модели виджет рисуется именно по ним, а после выбора
+  модели они перестают использоваться. Клонируя виджет, переписывать их явно — иначе в макет
+  уезжают «январь…декабрь» донора, а диапазон — из чужой метрики.
+- `columns_meta` в модели бывает пустым: колонки платформа подтягивает из таблицы.
 
 ## Что обязательно в этом формате
 
@@ -60,6 +71,73 @@ viewSettings{20–30 секций}, positionConfig{x,y,width,height,sticking}, b
    `fictionalData` (реальные значения из датасета), привязка к полю — `nameSettings.fieldName`,
    «выпадающий» — это `isAlwaysOpen: false`. Клонировать один и тот же образец под все фильтры:
    лишний/отсутствующий ключ в клоне меняет отрисовку.
+   - Типы: `single` | `multiple` | `date`; у `date` — `displayMode`, `enabledPresetsIds`,
+     `enabledFilterModes` (byMonth / byQuarter / byYear / byWeek). `filterInfluences` — карта id
+     виджетов, на которые фильтр влияет (бывает `null`).
+   - **Ключ `isAlwaysOpen` есть только у `multiple`**, у `single` его нет вовсе — и такой фильтр
+     рисуется раскрытым списком значений. Нужен одиночный выпадающий: оставить `type: "single"`
+     и добавить `isAlwaysOpen: false`.
+   - Минимальный дизайн: `styleContainerSettings.showBackground: false` +
+     `backgroundSettings.isShow: false`, `borderSettings {isActive: false, width: 0}`,
+     `shadowSettings.isActive: false`, текст — `buttonSettings.textPropertiesSettings`:
+     `fontSize: 12`, `padding {vertical: 6, horizontal: 8}`, `alignment: "flex-start"`,
+     `fontColor: null`; плюс `paddingSettings` по четырём сторонам и
+     `position {positionHorizontal: "flex-start", positionVertically: "center"}`.
+   - В выгрузке фильтр может лежать с `field: null, settings: null` — как он привязан к полю, из
+     такого файла не видно; брать образец, где привязка заполнена.
+
+## Текстовые виджеты: значение в переменных и выравнивание
+
+- **Выравнивание живёт в двух местах, и в UI читается не то, что кажется.** У текстового виджета
+  есть `viewSettings.text.alignment` (у элемента) и `viewSettings.textProperties.alignment`
+  (секция «Текст» в настройках визуализации). В донорах второе лежит как `center/center`;
+  «сделать текст по левому краю» выполняется, только когда поправлены **оба**
+  (`{vertical: "flex-start", horizontal: "flex-start"}`) — на одном `text.alignment` карточка
+  остаётся по центру.
+- **Секции `header` у текстового виджета может не быть вообще** (база — самый маленький виджет
+  типа `text`), поэтому «сделать заголовок крупнее» означает первую строку-переменную, а не `header`.
+- **Несколько переменных в одной строке.** Значение и единицу измерения держать разными
+  переменными (`{{var1}} {{var2}}`): при привязке к модели число приходит из данных, а
+  «млн ₽ / шт / %» остаётся текстом. Плейсхолдеры в rich-тексте подставляются по месту, поэтому
+  единица не уезжает на отдельную строку.
+- **Две разные настройки отступов.** «Внутренние отступы» виджета — `viewSettings.paddingSettings`
+  (top/left/right/bottom), а не `text.padding` (vertical/horizontal). В UI это две разные настройки:
+  просьба «добавить внутренние отступы» относится к `paddingSettings`.
+
+## Круговая и пончик (`pie`)
+
+Отдельный `visualisationType: "pie"` (не режим `lineAndBar`), `dataSettings.roseType: "pie"`.
+У неё **нет** `dataSettings.type`, `barType`, `variables`, `indicatorsStackSum`, а также
+`verticalZoom` / `horizontalZoom`: ползунка приближения у круговой не бывает, флаг «без зума» для
+неё тихо пропускается. Наборы ключей `dataSettings` / `viewSettings` / `positionConfig` / разреза /
+показателя — свои, сверять с образцом этого типа.
+
+- Форма и подписи — `viewSettings.styleSettings`: `innerRadius {label, value: "%"}` (0 — сплошной
+  пай, 30–60 — пончик), `outerRadius`, `arcStartAngle` / `arcEndAngle`, `padAngle`, `borderWidth`,
+  `borderRadius`, `labelFormat` (`["value","name"] | ["value"] | []`), `labelSize`,
+  `centerCoordinates`, `hideOverflowLabels`, `pieAnimationElement`, свой `colorBySettings`.
+- Что писать на сегменте — `indicators[].settings.valueFormat: "percent" | "absolute"`; единица
+  измерения по-прежнему в `settings.formatting.formats`.
+- Легенда — `legendSettings {width, isShow, offset, location {bottom|right}, position}`.
+- Разрез у круговой читается как легенда: `fictionalData` разреза заполнять человеческими
+  названиями категорий, а не «Группа 1…10» из образца.
+- Кольцо, подписи и легенду выносить в параметры сборщика, а не править JSON руками.
+
+## Группы (контейнеры)
+
+Группа живёт в `pagesSettings[].groupsVisualizationsV3[]`:
+`{id, name, type: "group", events{variablesSettings}, pageId, isGrouped: false, isVisible,
+widgetIds: [id членов], viewSettings{…}, parentGroupId: null, positionConfig{x,y,width,height}}`.
+
+- **Координаты у членов локальные.** У группы `positionConfig` — абсолютный бокс на доске, у членов —
+  координаты внутри группы (группа в (1370,145), а члены в (0,170), (11,66)). У члена
+  `viewSettings.group.positionConfig` повторяет его же локальный бокс, `group.groupId` = id группы,
+  `isGrouped: true`. Клонируя виджет из группы, позицию брать из группы, а не из `positionConfig` члена.
+- **Слои:** id группы и id каждого члена — отдельные записи в `indeces.layers`; группа может стоять
+  выше своих членов.
+- Сгруппированных фильтров в выгрузках не встречалось: механизм тот же (widgetIds + group у члена +
+  локальные координаты), но результат проверять на платформе — это допущение, а не подтверждённый
+  случай.
 
 ## Тепловая карта (`heatmap`) — своя ветка, не как у графиков
 
@@ -77,6 +155,16 @@ viewSettings{20–30 секций}, positionConfig{x,y,width,height,sticking}, b
 - `paddingSettings.right` у донора бывает 1000 — приводить к общему отступу виджета;
 - `gradientBackgroundByValueSettings` переносить из донора и **возвращать после сантайза**:
   внутри служебные алиасы (`backgroundValueAlias`), без них карта теряет градиент.
+
+## Спарклайн и разблокировка элементов
+
+- **Спарклайн — не отдельный тип.** Это обычный `lineAndBar` малого размера (≈350×52) с погашенной
+  обвязкой: `legendSettings.isShow: false`, `axis*.label.isActive: false`, `axis*.name.isShow: false`,
+  `header.isShow: false`, сжатые `visualisationPaddings`, один показатель и короткий разрез
+  (12 месяцев). Ставится поверх карточки-текста внутри её габаритов, а в `indeces.layers` — выше неё.
+- **Разблокировка элементов:** `viewSettings.disableDragging: false` + `freeLocation: true`
+  у виджетов и `disableDragging: false` у фильтров. Галочка «реальные данные» — `dataSettings.isRealData`
+  у виджетов и `isRealData` у фильтров; для макета её ставят в `false`.
 
 ## Ловушки, которые стоят больше всего времени
 
@@ -126,6 +214,45 @@ viewSettings{20–30 секций}, positionConfig{x,y,width,height,sticking}, b
   встречается где-то на странице» пропускает удаление пометки из конкретного блока.
 - **Свои id не вычищать вместе с чужими** — включая `incisions[].id`, `indicators[].id`,
   `variables[].id`. Забытый вид объекта даёт пустые id, и платформа их не различает.
+- **Панель инструментов — `viewSettings.toolboxSettings`:** `isShow`, `hasTableData` (системная
+  кнопка «скачать данные»), `saveHowImage`, `isReset`, `orientation`, `verticalLocation` /
+  `horizontalLocation`, `borderColor` / `backgroundColor`. У **таблиц** в боевых экспортах этого
+  блока нет вообще, у графиков и круговой он есть с `isShow: false`: для таблицы объект приходится
+  задавать целиком по образцу графика, и схемой это не подтверждено — проверять на платформе.
+- **Подписи значений — у показателя:** `indicators[].settings.showValue`
+  `{isShow, position, orientation, properties{fontSize}, colorBySettings}`. В донорских выгрузках
+  `isShow: false` у всех, а `position` встречается как `top`, `outside`, `flex-start` / `flex-end`.
+  Для горизонтальных столбцов (`rotateTo90: true`) «подписи в начале столбца» — это `flex-start`,
+  для вертикальных — `top`.
+- **Пунктир и тип линии — тоже у показателя:** `indicators[].settings.elementSettings.parameters`
+  = `{type, dotWidth, isDotted, lineType: "smooth" | "broken", lineWidth, areaOpacity}`. Донор
+  приносит `isDotted: true`, а на одной странице сосуществуют оба варианта (столбцы —
+  `lineType: "broken"`, `areaOpacity: 0`), поэтому проверять каждый показатель отдельно.
+- **`activeIncisionId: null` схемой допускается** — так лежит в боевом экспорте у типа `table`;
+  это не поломка и не повод пересобирать виджет.
+- **`page.variables` — булевы переменные видимости, а не значения.** Значения текстовых переменных
+  живут в `dataSettings.variables[].settings.textPropertiesSettings.text.text`; искать их
+  в `page.variables` бесполезно.
+
+## Порядок сборки новой страницы
+
+1. Клонировать по одному эталону на нужный тип: столбцы+линия с иерархией дат, горизонтальные
+   столбцы (`rotateTo90: true`), таблица, «прогрессбар» для KPI, текст; круговую — из чистого
+   экземпляра (`incisions[0].colors is None`).
+2. Заменить `id`, `pageId`, `dataSettings.modelId`, `viewSettings.name`. id детерминированные
+   (`uuid5` от роли и имени), `PAGE_ID` — константа.
+3. Отвязать от групп: `viewSettings.group.isGrouped: false`, `groupId: null`, убрать вложенный
+   `positionConfig`, задать абсолютный.
+4. Погасить события: `goTo` / `goToHref` / `activateTo` / `activateObject` /
+   `transitionSettings.isActive` → `false`, `to` → `null`.
+5. Пересобрать `incisions` / `indicators` из прототипов, задать `operationType` явно,
+   `activeIncisionId` = id первого разреза, `limit.isActive: false`, `variables: []`, `sqlData`
+   обнулить целиком.
+6. Сантайз чужого (см. `builder-checklist.md` §4) — и отдельно проверить поиском, что не осталось
+   имён чужих таблиц и полей.
+7. Старые id прототипов, оставшиеся в настройках осей и легенд, заменить на новые (что не перенесли — `null`).
+8. Имена объектов задавать сразу в сборщике: переименование после импорта — это десятки ручных
+   действий в UI.
 
 ## Правка существующей страницы (чужой живой экспорт)
 
