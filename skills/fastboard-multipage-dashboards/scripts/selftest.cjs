@@ -1,6 +1,5 @@
 const assert = require("node:assert/strict");
 const { validate } = require("./check-dashboard.cjs");
-const { Client, decode, safe, isRead } = require("./mcp-client.cjs");
 function fixture() {
   return {
     pagesSettings: [
@@ -180,98 +179,10 @@ test("second page is validated", () => {
     ),
   );
 });
-test("RPC JSON parser", () =>
-  assert.deepEqual(decode('{"result":{"ok":true}}'), { result: { ok: true } }));
-test("RPC SSE parser", () =>
-  assert.deepEqual(decode('event: message\ndata: {"result":{"ok":true}}\n\n'), {
-    result: { ok: true },
-  }));
-test("sanitize credentials", () => {
-  const token = "fbpat_" + "samplecredentialneveruse";
-  assert.equal(
-    safe({ password: "no", info: token }, token).password,
-    "[REDACTED]",
-  );
-  assert.equal(safe(token, token), "[REDACTED]");
-});
-test("sanitize serialized JSON credentials", () => {
-  const out = safe(
-    '{"nested":{"password":"sample-password"},"accessToken":"sample-access"}',
-  );
-  assert.ok(!out.includes("sample-password"));
-  assert.ok(!out.includes("sample-access"));
-});
-test("sanitize HTTP error credential text", () => {
-  const out = safe(
-    'HTTP 401: {"accessToken":"sample-access","password":"sample-password"}',
-  );
-  assert.ok(!out.includes("sample-access"));
-  assert.ok(!out.includes("sample-password"));
-});
-test("sanitize session headers and jwt fields", () => {
-  const out = safe({
-    "X-Auth-Token": "sample-session",
-    jwt: "sample-jwt",
-    note: "Authorization: Bearer sample-secret",
-  });
-  assert.equal(out["X-Auth-Token"], "[REDACTED]");
-  assert.equal(out.jwt, "[REDACTED]");
-  assert.ok(!out.note.includes("sample-secret"));
-});
-test("safe read classification", () => {
-  assert.equal(isRead("get_project_pages"), true);
-  assert.equal(isRead("save_project_pages"), false);
-  assert.equal(isRead("data_catalog_ai_fill"), false);
-  assert.equal(isRead("qa_send_message"), false);
-});
-async function asyncTests() {
-  const requests = [];
-  const fetchImpl = async (url, options) => {
-    const body = JSON.parse(options.body);
-    requests.push(body);
-    return {
-      ok: true,
-      status: 200,
-      headers: { get: () => null },
-      text: async () =>
-        JSON.stringify({
-          result: { content: [{ type: "text", text: "true" }] },
-        }),
-    };
-  };
-  const c = new Client({
-    endpoint: "https://example.invalid/api/v3/mcp",
-    token: "test-only",
-    projectId: "project-a",
-    fetchImpl,
-  });
-  await assert.rejects(() => c.call("save_project_pages", {}), /--write/);
-  assert.equal(requests.length, 0);
-  tests++;
-  console.log("PASS write denied before network");
-  await assert.rejects(
-    () => c.call("get_project_pages", { projectId: "other" }),
-    /does not match/,
-  );
-  assert.equal(requests.length, 0);
-  tests++;
-  console.log("PASS project mismatch denied before network");
-  await c.call("save_project_pages", {}, true);
-  assert.deepEqual(
-    requests.map((r) => r.params.name),
-    ["get_last_settings_timestamp", "save_project_pages"],
-  );
-  tests++;
-  console.log("PASS timestamp before explicit write");
-  console.log(
-    JSON.stringify({
-      status: "PASS",
-      tests,
-      network: "mock only; no server calls",
-    }),
-  );
-}
-asyncTests().catch((e) => {
-  console.error(e);
-  process.exitCode = 1;
-});
+console.log(
+  JSON.stringify({
+    status: "PASS",
+    tests,
+    scope: "check-dashboard only; no network, no MCP client",
+  }),
+);

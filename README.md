@@ -39,7 +39,7 @@ agent-skills/
 │   └── fastboard-multipage-dashboards/  # скилл: многостраничный дашборд (HTML → FB, попапы, приёмка)
 │       ├── SKILL.md
 │       ├── references/        # контракты платформы, данные и композиция, приёмка, тест-запросы
-│       └── scripts/           # офлайн-чекер, MCP-клиент, селфтест
+│       └── scripts/           # офлайн-чекер и его селфтест
 ├── scripts/
 │   ├── install.mjs            # разложить skills/ по каталогам агентских систем
 │   └── validate-skills.mjs    # проверка frontmatter по спецификации Agent Skills
@@ -126,9 +126,9 @@ boolean-переменной с receiver у каждого объекта, от�
 окно прокрученного реестра и сброс native-выбора при закрытии попапа — как отдельные проверки.
 Скрипты: `scripts/check-dashboard.cjs` — офлайн-валидатор **всех** страниц (id, слои, переменные,
 геометрия, модель, шаблоны KPI, конфликт событий, ссылки палитры; флаги `--models`, `--palettes`,
-`--strict`), `scripts/selftest.cjs` — 25 тестов валидатора и клиента без сети (12 негативных на
-подложенных поломках), `scripts/mcp-client.cjs` — MCP-клиент без npm-зависимостей, запись только с
-явным `--write` и сверкой `projectId`.
+`--strict`), `scripts/selftest.cjs` — 16 тестов валидатора без сети (11 негативных на подложенных
+поломках). MCP-вызовы — клиентом из `fastboard-mcp-master`, второго клиента в репозитории нет; механика
+триггеров и попапа — в `fastboard-triggers`, палитры — в `fastboard-palettes`.
 
 Область работы: не меняет пользовательские ETL и модели без просьбы, не ставит пакеты, не пишет в FB
 при прогоне `selftest`/`check-dashboard`, не отправляет диагностику наружу. Чекер офлайн — он не
@@ -241,7 +241,7 @@ cd skills/fastboard-mcp-master
 FB_PAT=fbpat_… FB_MCP=https://<хост>/back/api/v3/mcp python3 scripts/fb_mcp.py tools
 
 cd skills/fastboard-multipage-dashboards
-node scripts/selftest.cjs                                                # 25 тестов чекера и клиента, без сети
+node scripts/selftest.cjs                                                # 16 тестов чекера, без сети
 node scripts/check-dashboard.cjs dashboard.json --palettes colors.json   # все страницы: 0 или список нарушений
 node scripts/check-dashboard.cjs dashboard.json --models models.json --strict
 

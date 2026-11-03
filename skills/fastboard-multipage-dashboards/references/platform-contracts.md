@@ -7,18 +7,16 @@ Prefix определяется стендом; не считай `/back` уни
 PAT работает на MCP, обычный REST требует действующую пользовательскую сессию.
 Не обновляй конфиг глобального подключения без необходимости: конкретный PAT можно использовать в отдельном клиенте.
 
-Минимальная последовательность: `initialize` → `tools/list` → `tools/call`.
-Инструменты и их actual schema узнавай на текущем сервере: набор и тела меняются между версиями.
+MCP-клиент, токены и последовательность `initialize` → `tools/list` → `tools/call` — в скилле
+`fastboard-mcp-master` (его `scripts/fb_mcp.py` и `references/USER_GUIDE.md`); там же имена инструментов и их
+actual schema, которые меняются между версиями. Не заводи второй клиент: нужен нестандартный вызов —
+добавь метод в `fb_mcp.py`.
 
-```text
-node scripts/mcp-client.cjs tools --out tools.json
-node scripts/mcp-client.cjs call get_project_pages --out pages-before.json
-node scripts/mcp-client.cjs call save_project_visualisations --args payload.json --write --out write-result.json
-```
-
-Переменные окружения: FB_MCP, FB_PAT, FB_PROJECT_ID. Не показывай их значения в отчёте.
-Клиент не пишет в проект без `--write`; перед записью вызывает timestamp.
-Проверка timestamp перед вызовом не является транзакцией: при конфликте перечитай проект, сравни изменения, не повторяй запись вслепую.
+Защиты, которые `fb_mcp.py` не делает сам, держи в процессе:
+- запись (`save_*`) — только по явному подтверждению пользователя;
+- перед ней вызови `get_last_settings_timestamp` и сверь `projectId` в ответе;
+- timestamp не транзакция: при конфликте перечитай проект, сравни изменения, не повторяй запись вслепую;
+- значения FB_MCP / FB_PAT / FB_PROJECT_ID в отчёт не попадают.
 
 Экспортный конверт страницы:
 
@@ -91,59 +89,25 @@ node scripts/mcp-client.cjs call save_project_visualisations --args payload.json
 Кегль/цвет/жирность проверяй и на `viewSettings.textProperties`, и на `variables[].settings.textPropertiesSettings`.
 Для номера, фоновой подложки и подписи допускаются отдельные native-медиаблоки.
 
-## Переход Между Страницами
+## Переходы И Попап
 
-```json
-{
-  "goTo":{"isActive":true,"to":{"id":"DESTINATION_PAGE_ID","type":"page"}},
-  "transitionSettings":{"isActive":false}
-}
-```
+Механика переходов, писатель/приёмник `variablesSettings`, `isVisible`, слои попапа и затемнение —
+в `fastboard-triggers` (его references `page-json-triggers.md` и разобранный пример
+`popup-pattern.md`). Здесь только то, чего там нет:
 
-На проверенном frontend активный `transitionSettings` имеет приоритет над `goTo`.
-Object-transition может вернуть управление без перехода, если у текстовой кнопки нет точки данных.
-Поэтому не включай оба механизма «на всякий случай». Проверяй **клик по самой карточке/кнопке**, не только верхнюю вкладку FB.
-`goToHref` применяй для действительно внешних ссылок или явно согласованного полного перехода браузера.
-
-## Попап Задач
-
-Переменная принадлежит странице:
-
-```json
-{"id":"POPUP_ID","name":"Задачи инициативы","type":"boolean","status":"false"}
-```
-
-Writer реестра:
-
-```json
-{
-  "variablesSettings":{
-    "mode":"common",
-    "isActive":true,
-    "variables":[{"id":"ACTION_ID","status":"true","variableId":"POPUP_ID"}],
-    "control":{"view":{"isActive":false,"variableId":"","variableName":""}},
-    "matches":[],"separatedModeVariables":[]
-  }
-}
-```
-
-Receiver у **каждого** popup-объекта:
-
-```json
-{"isVisible":false,"events":{"variablesSettings":{"control":{"view":{"isActive":true,"variableId":"POPUP_ID","variableName":"Задачи инициативы"}}}}}
-```
-
-Крестик/подложка одновременно receiver и writer `status:"false"`.
-Отбор задач — отдельная обязанность native-фильтрации: boolean сам по себе не знает, какая инициатива выбрана.
-Не угадывай тип `filterInfluences`; возьми с работающего донора и проверь UI.
-При раскрытии задачи группируются по task_id; безопасный отображаемый разрез:
-
-```sql
-concat(toString(m.task_id), ' · ', m.task)
-```
-
-Если исходный реестр отфильтровывает сам себя, после закрытия может остаться одна строка.
-Проверь `isInfluenceItself`, `moreThanOne`, реакцию на чужие фильтры и обратный выбор другой инициативы.
+- `goTo` и активный `transitionSettings` одновременно не включай: на проверенном frontend приоритет у
+  `transitionSettings`, а object-transition может вернуть управление без перехода, если у текстовой
+  кнопки нет точки данных. Проверяй клик по самой карточке/кнопке, не только верхнюю вкладку.
+- Отбор задач — отдельная обязанность native-фильтрации: boolean попапа не знает, какая инициатива выбрана.
+- Задачи группируй по `task_id`, а не по названию; безопасная отображаемая подпись —
+  `concat(toString(m.task_id), ' · ', m.task)`.
+- Если исходный реестр отфильтровывает сам себя, после закрытия может остаться одна строка. Проверь
+  `isInfluenceItself`, `moreThanOne`, реакцию на чужие фильтры и обратный выбор другой инициативы.
+- Попап абсолютный в координатах доски: открытие из прокрученного реестра проверяй отдельно — он может
+  оказаться выше viewport.
+- Закрытие boolean не обязано сбрасывать native selection chip: проверь и опиши способ сброса.
+- Фильтры локальные и сквозные — разные режимы; перенос выбора между страницами без отдельной
+  настройки и теста не обещай.
 
 ## Оформление И Координаты
 
@@ -171,7 +135,7 @@ concat(toString(m.task_id), ' · ', m.task)
 
 - Фон контейнера требует согласованных showBackground, backgroundSettings.isShow и ссылки colorSettings.background.color.
 - Цвета серий находятся в indicator.settings.elementSettings.colorBySettings; фон страницы — page.color.color.
-- Ссылка цвета ключуется **paletteId**, не случайным id страницы. Уровни темы — другой механизм; не переписывай все UUID-ключи одним regex.
+- Ссылка цвета ключуется **paletteId**, не случайным id страницы (формат палитр и применение — `fastboard-palettes`). Уровни темы — другой механизм; не переписывай все UUID-ключи одним regex.
 - В проверенной версии числовой медиаблок корректно принял палитровый fontColor; это не основание считать любую версию FB эквивалентной. Проверяй в браузере.
 - У pie `settings.valueFormat="percent"` может показывать округлённые проценты без знака. Проверено переключение на `"numerical"`; посмотри реальные подписи **3/5/3**, не только JSON.
 - У lineAndBar проверь `labelOrientation`: донорское `incline` часто ломает длинные подписи. `horizontal`, переносы строк, сокращение и разумные plot paddings предпочтительнее мелкого текста.
