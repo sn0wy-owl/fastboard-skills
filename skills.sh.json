@@ -3,7 +3,15 @@
   "groupings": [
     {
       "title": "BI & Dashboards",
-      "skills": ["dashboard-build", "bi-dashboard-styleguide", "fastboard-palettes", "fastboard-mcp-master", "fastboard-widget-naming", "fastboard-triggers"]
+      "skills": [
+        "dashboard-build",
+        "bi-dashboard-styleguide",
+        "fastboard-palettes",
+        "fastboard-mcp-master",
+        "fastboard-widget-naming",
+        "fastboard-triggers",
+        "fastboard-multipage-dashboards"
+      ]
     }
   ]
 }
