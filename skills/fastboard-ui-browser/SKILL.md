@@ -1,18 +1,22 @@
 ---
 name: fastboard-ui-browser
-description: "Use when working with Fastboard through browser/UI: place widgets, edit a page on the user's stand, inspect data/model settings, handle SQL-form traps, configure RLS/SLS/PLS, apply beauty rules, find SVG icons, or insert SVG into FB. Trigger for «работай через браузер», «поставь виджет», «настрой в конструкторе», «найди SVG», «добавь значки этапов», «вставь SVG в FB», and browser image search. Complements fastboard-dashboard-creator and fastboard-widget-sql; do not use for standalone image editing."
-version: 1.0.0
+license: "MIT"
+compatibility: "Requires an authenticated Fastboard browser session; the user supplies access and target stand."
+metadata:
+  author: "sn0wy-owl"
+  version: "1.0.1"
+  tags: "fastboard, dashboard, browser, svg, ui"
+description: "Use when working with Fastboard through browser/UI: place widgets, edit a page on the user's stand, inspect data/model settings, handle SQL-form traps, configure RLS/SLS/PLS, apply beauty rules, find SVG icons, or insert SVG into FB. Trigger for «работай через браузер», «поставь виджет», «настрой в конструкторе», «найди SVG», «добавь значки этапов», «вставь SVG в FB», and browser image search. Use the MCP/API-specific skills when that path is available; do not use for standalone image editing."
+version: 1.0.1
 ---
 
 # FastBoard: UI / браузерный путь
 
-Навык Грачьи (курс Stepik 246949 + практика UI), **встроенный** в пакет как сосед
-`fastboard-dashboard-creator`. Не заменяет MCP Style Packs / `get_data` smoke —
-дополняет, когда нужно кликать UI или нет MCP.
+Практический навык для браузерного пути Fastboard. Он дополняет MCP/API-инструменты,
+когда нужно кликать UI или работать без MCP.
 
-**Предпочтительно для сборки/полировки по промпту:**  
-[`../fastboard-dashboard-creator/SKILL.md`](../fastboard-dashboard-creator/SKILL.md) +  
-[`../fastboard-widget-sql/SKILL.md`](../fastboard-widget-sql/SKILL.md).
+Если доступен MCP/API-путь, используй его для массовых записей и проверок; этот
+skill оставляй для браузерных действий и обхода UI-ловушек.
 
 **Этот skill** — механика конструктора, ловушки SQL-формы, карта платформы, API round-trip из вкладки.
 
@@ -28,8 +32,8 @@ version: 1.0.0
 2. **Данные.** Диспетчер → скрипт загрузки → модель (связи) → **обязательно** «Сохранить модель».
 3. **Реальные данные** на виджетах + SQL-форма при необходимости → [references/sql-patterns.md](references/sql-patterns.md).
 4. **Интерактивность.** Фильтры, события, drill-down.
-5. **Оформление.** «Правила красоты» ниже; для Soft SaaS Cards при наличии MCP — pack `soft-saas` из creator-skill.
-6. **Проверка.** Режим просмотра + фильтры; при MCP — ещё `get_data` / [`../fastboard-check/SKILL.md`](../fastboard-check/SKILL.md).
+5. **Оформление.** «Правила красоты» ниже; применяй палитру и существующий стиль целевого стенда.
+6. **Проверка.** Режим просмотра + фильтры; при доступном API дополнительно проверь данные каждого виджета.
 
 ## Механика UI (критично для браузера)
 
@@ -81,10 +85,10 @@ version: 1.0.0
 |------|------------|
 | [references/sql-patterns.md](references/sql-patterns.md) | SQL в форме виджета, календарь смещений, sumIf |
 | [references/platform-map.md](references/platform-map.md) | Роли, SLS/PLS/RLS, коннекторы, CRON |
-| [references/ui-practice.md](references/ui-practice.md) | Живые ловушки UI (memory Грачьи) |
+| [references/ui-practice.md](references/ui-practice.md) | Живые ловушки UI и порядок действий |
 | [references/course-knowledge.md](references/course-knowledge.md) | Конспект курса Stepik |
 | [references/api-roundtrip.md](references/api-roundtrip.md) | REST из вкладки: visualisations, layers, цвета |
 | [references/api-import.md](references/api-import.md) | Экспорт/импорт проекта, schema visualisations_v3 |
 | [references/svg-images.md](references/svg-images.md) | Поиск SVG в браузере, запрос файлов у пользователя, вставка в FB и проверка |
 
-SQL-слоты API/MCP (канон): [`../fastboard-widget-sql/SKILL.md`](../fastboard-widget-sql/SKILL.md).
+Для SQL используй диалект ClickHouse и проверяй запрос в SQL-viewer виджета перед сохранением.

@@ -1,11 +1,4 @@
----
-name: fastboard-knowledge
-description: Конспект курса Stepik «Fastboard: Бизнес-аналитика без сложностей» — устройство платформы, данные, SQL, визуализация
-type: reference
-sources: [cowork-import]
-imported_at: 2026-09-15T19:19:30Z
----
-# FastBoard — база знаний (из курса Stepik 246949, пройден 2026-07-15)
+# FastBoard — база знаний по устройству платформы, данным, SQL и визуализации
 
 Целевой инстанс: URL стенда пользователя (не хардкодить demo/stage).
 Официальная документация: https://help.fastboard.online/
