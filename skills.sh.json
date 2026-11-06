@@ -6,6 +6,8 @@
       "skills": [
         "dashboard-build",
         "bi-dashboard-styleguide",
+        "bi-dashboard-hierarchy",
+        "bi-dashboard-spacing",
         "fastboard-palettes",
         "fastboard-mcp-master",
         "fastboard-widget-naming",
