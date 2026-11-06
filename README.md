@@ -33,12 +33,16 @@ agent-skills/
 │       ├── SKILL.md
 │       ├── references/        # таблица проблем и обходов (транспорт, файл, записи, конфиг)
 │       └── scripts/           # клиент MCP: tools / schema / call
-│   └── fastboard-widget-naming/  # скилл: имена объектов страницы (блоки → типы → необязательные знаки)
+│   ├── fastboard-widget-naming/  # скилл: имена объектов страницы (блоки → типы → необязательные знаки)
+│   │   ├── SKILL.md
+│   │   └── scripts/           # карта имён и эмодзи-префиксы (propose / emoji / apply)
+│   ├── fastboard-ui-browser/    # скилл: браузерный путь Fastboard, UI-ловушки и SVG
+│   │   ├── SKILL.md
+│   │   └── references/        # API round-trip, UI-практика и SVG-вставка
+│   └── fastboard-multipage-dashboards/  # скилл: многостраничный дашборд (HTML → FB, попапы, приёмка)
 │       ├── SKILL.md
-│       └── scripts/           # карта имён и эмодзи-префиксы (propose / emoji / apply)
-│   └── fastboard-ui-browser/    # скилл: браузерный путь Fastboard, UI-ловушки и SVG
-│       ├── SKILL.md
-│       └── references/        # API round-trip, UI-практика и SVG-вставка
+│       ├── references/        # контракты платформы, данные и композиция, приёмка, тест-запросы
+│       └── scripts/           # офлайн-чекер и его селфтест
 ├── scripts/
 │   ├── install.mjs            # разложить skills/ по каталогам агентских систем
 │   └── validate-skills.mjs    # проверка frontmatter по спецификации Agent Skills
@@ -119,6 +123,28 @@ SQL и позиции не меняются.
 проверка режима просмотра, UI-ловушки, RLS/SLS/PLS и администрирование стенда. Отдельная методика
 описывает поиск SVG в браузере или запрос исходника у пользователя, безопасную подготовку SVG,
 вставку через переменную медиа-блока `var0` с `vectorSettings` и визуальную проверку на целевой странице.
+### `fastboard-multipage-dashboards` — многостраничный дашборд: HTML → Fastboard
+
+Задача класса «согласованный прототип уже есть — собери то же в Fastboard: главная, детализации
+групп, попап задач». Внутри: матрица «экран → состав → переход → контекст данных»; один источник на
+все экраны с явным зерном (`uniqExact(initiative_id)` / `uniqExact(task_id)`) и знаменателями; правило
+«настоящие native-графики вместо текстовых полос и SVG-заглушек»; один воспроизводимый сборщик со
+стабильными id, явными `indeces.layers` и `isGrouped=false`/`groupId=null` при разгруппировке;
+контракты платформы (KPI-медиаблок с `{{var0}}`, `goTo` против `transitionSettings`, попап на
+boolean-переменной с receiver у каждого объекта, отступы контейнера через `paddingSettings.unsetPaddings`);
+окно прокрученного реестра и сброс native-выбора при закрытии попапа — как отдельные проверки.
+Скрипты: `scripts/check-dashboard.cjs` — офлайн-валидатор **всех** страниц (id, слои, переменные,
+геометрия, модель, шаблоны KPI, конфликт событий, ссылки палитры; флаги `--models`, `--palettes`,
+`--strict`), `scripts/selftest.cjs` — 16 тестов валидатора без сети (11 негативных на подложенных
+поломках). MCP-вызовы — клиентом из `fastboard-mcp-master`, второго клиента в репозитории нет; механика
+триггеров и попапа — в `fastboard-triggers`, палитры — в `fastboard-palettes`.
+
+Область работы: не меняет пользовательские ETL и модели без просьбы, не ставит пакеты, не пишет в FB
+при прогоне `selftest`/`check-dashboard`, не отправляет диагностику наружу. Чекер офлайн — он не
+заменяет живой `get_data` smoke, браузерный QA и серверный readback.
+Пример запроса: «Перенеси согласованный HTML в многостраничный Fastboard. Сохрани навигацию:
+главная, детализации групп, всплывающая таблица задач. Нужны настоящие диаграммы, фильтры и проверка
+всех переходов».
 
 ## Куда смотрит каждая система
 
@@ -146,6 +172,7 @@ hermes skills install sn0wy-owl/fastboard-skills/fastboard-palettes
 hermes skills install sn0wy-owl/fastboard-skills/fastboard-mcp-master
 hermes skills install sn0wy-owl/fastboard-skills/fastboard-widget-naming
 hermes skills install sn0wy-owl/fastboard-skills/fastboard-ui-browser
+hermes skills install sn0wy-owl/fastboard-skills/fastboard-multipage-dashboards
 hermes skills update                           # подтянуть новые версии
 ```
 
@@ -222,6 +249,11 @@ python3 scripts/check_colors.py page.json --palette palette-roles.json   # цв�
 
 cd skills/fastboard-mcp-master
 FB_PAT=fbpat_… FB_MCP=https://<хост>/back/api/v3/mcp python3 scripts/fb_mcp.py tools
+
+cd skills/fastboard-multipage-dashboards
+node scripts/selftest.cjs                                                # 16 тестов чекера, без сети
+node scripts/check-dashboard.cjs dashboard.json --palettes colors.json   # все страницы: 0 или список нарушений
+node scripts/check-dashboard.cjs dashboard.json --models models.json --strict
 
 cd skills/fastboard-widget-naming
 python3 scripts/fb_widget_names.py propose page.json -o names.csv         # черновик карты имён

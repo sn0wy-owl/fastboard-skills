@@ -1,13 +1,13 @@
 ---
 name: fastboard-ui-browser
-license: "MIT"
-compatibility: "Requires an authenticated Fastboard browser session; the user supplies access and target stand."
-metadata:
-  author: "sn0wy-owl"
-  version: "1.0.1"
-  tags: "fastboard, dashboard, browser, svg, ui"
 description: "Use when working with Fastboard through browser/UI: place widgets, edit a page on the user's stand, inspect data/model settings, handle SQL-form traps, configure RLS/SLS/PLS, apply beauty rules, find SVG icons, or insert SVG into FB. Trigger for «работай через браузер», «поставь виджет», «настрой в конструкторе», «найди SVG», «добавь значки этапов», «вставь SVG в FB», and browser image search. Use the MCP/API-specific skills when that path is available; do not use for standalone image editing."
-version: 1.0.1
+version: 1.0.2
+license: CC-BY-4.0
+compatibility: "Нужна авторизованная сессия Fastboard в браузере; доступ и целевой стенд даёт пользователь. Python не требуется, свои скрипты у скилла отсутствуют."
+metadata:
+  author: team
+  version: "1.0.2"
+  tags: [fastboard, dashboard, browser, ui, sql, svg, rls, clickhouse]
 ---
 
 # FastBoard: UI / браузерный путь
@@ -77,7 +77,7 @@ skill оставляй для браузерных действий и обхо�
 - Одна палитра на проект; акцент — только главному KPI.
 - Свои группы цветов: hex **строчными без #**, apply по blur (Tab).
 - 5–9 виджетов на страницу; детали — отдельные страницы / попапы.
-- Для Soft SaaS / product: единые chart headers (**18 bold**), dual KPI — см. creator-skill rules.
+- Для Soft SaaS / product: единые chart headers (**18 bold**), dual KPI — см. [../bi-dashboard-styleguide/SKILL.md](../bi-dashboard-styleguide/SKILL.md).
 
 ## Справочники
 
@@ -86,7 +86,7 @@ skill оставляй для браузерных действий и обхо�
 | [references/sql-patterns.md](references/sql-patterns.md) | SQL в форме виджета, календарь смещений, sumIf |
 | [references/platform-map.md](references/platform-map.md) | Роли, SLS/PLS/RLS, коннекторы, CRON |
 | [references/ui-practice.md](references/ui-practice.md) | Живые ловушки UI и порядок действий |
-| [references/course-knowledge.md](references/course-knowledge.md) | Конспект курса Stepik |
+| [references/course-knowledge.md](references/course-knowledge.md) | Конспект по устройству платформы, данным и SQL |
 | [references/api-roundtrip.md](references/api-roundtrip.md) | REST из вкладки: visualisations, layers, цвета |
 | [references/api-import.md](references/api-import.md) | Экспорт/импорт проекта, schema visualisations_v3 |
 | [references/svg-images.md](references/svg-images.md) | Поиск SVG в браузере, запрос файлов у пользователя, вставка в FB и проверка |
