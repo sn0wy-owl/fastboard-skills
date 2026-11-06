@@ -36,6 +36,9 @@ agent-skills/
 │   ├── fastboard-widget-naming/  # скилл: имена объектов страницы (блоки → типы → необязательные знаки)
 │   │   ├── SKILL.md
 │   │   └── scripts/           # карта имён и эмодзи-префиксы (propose / emoji / apply)
+│   ├── fastboard-ui-browser/    # скилл: браузерный путь Fastboard, UI-ловушки и SVG
+│   │   ├── SKILL.md
+│   │   └── references/        # API round-trip, UI-практика и SVG-вставка
 │   └── fastboard-multipage-dashboards/  # скилл: многостраничный дашборд (HTML → FB, попапы, приёмка)
 │       ├── SKILL.md
 │       ├── references/        # контракты платформы, данные и композиция, приёмка, тест-запросы
@@ -114,6 +117,12 @@ blur, рамки, зум, анимация), правила проверки, с
 карту и печатает доказательства — сколько имён изменено, ноль лишних путей, «кроме имён не тронуто». Заголовки на доске (`header.text`), данные,
 SQL и позиции не меняются.
 
+### `fastboard-ui-browser` — браузерный путь и SVG
+
+Используется для работы с Fastboard через браузер: размещение виджетов, настройка модели и SQL,
+проверка режима просмотра, UI-ловушки, RLS/SLS/PLS и администрирование стенда. Отдельная методика
+описывает поиск SVG в браузере или запрос исходника у пользователя, безопасную подготовку SVG,
+вставку через переменную медиа-блока `var0` с `vectorSettings` и визуальную проверку на целевой странице.
 ### `fastboard-multipage-dashboards` — многостраничный дашборд: HTML → Fastboard
 
 Задача класса «согласованный прототип уже есть — собери то же в Fastboard: главная, детализации
@@ -162,6 +171,7 @@ hermes skills install sn0wy-owl/fastboard-skills/bi-dashboard-styleguide
 hermes skills install sn0wy-owl/fastboard-skills/fastboard-palettes
 hermes skills install sn0wy-owl/fastboard-skills/fastboard-mcp-master
 hermes skills install sn0wy-owl/fastboard-skills/fastboard-widget-naming
+hermes skills install sn0wy-owl/fastboard-skills/fastboard-ui-browser
 hermes skills install sn0wy-owl/fastboard-skills/fastboard-multipage-dashboards
 hermes skills update                           # подтянуть новые версии
 ```
